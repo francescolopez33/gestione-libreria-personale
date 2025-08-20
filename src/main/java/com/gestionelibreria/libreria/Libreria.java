@@ -1,6 +1,7 @@
 package com.gestionelibreria.libreria;
 
 import com.gestionelibreria.model.Libro;
+import com.gestionelibreria.observer.Observer;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,10 +14,14 @@ public class Libreria {
 
     private final List<Libro> libri;
 
+    //Observers
+    private final List<Observer> observers;
+
 
     private Libreria() {
         this.libri = new ArrayList<>();
-    }//costr
+        this.observers = new ArrayList<>();
+    }//costruttore
 
 
     public static synchronized Libreria getInstance() {
@@ -32,26 +37,38 @@ public class Libreria {
         //Controllo dell'ISBN
         for (Libro l : libri) {
             if (l.getIsbn().equals(libro.getIsbn())) {
-                return false; //ISBN già presente in lista libri
+                return false;
             }
         }
-        return libri.add(libro);
+        boolean successo = libri.add(libro);
+        if (successo) {
+            notifyObservers();
+        }
+        return successo;
     }//aggiungiLibro
 
 
+
     public boolean rimuoviLibro(String isbn) {
-        return libri.removeIf(l -> l.getIsbn().equals(isbn));
+        boolean successo = libri.removeIf(l -> l.getIsbn().equals(isbn));
+        if (successo) {
+            notifyObservers();
+        }
+        return successo;
     }//rimuoviLibro
+
 
     public boolean modificaLibro(Libro libro) {
         for (int i = 0; i < libri.size(); i++) {
             if (libri.get(i).getIsbn().equals(libro.getIsbn())) {
                 libri.set(i, libro);
+                notifyObservers();
                 return true;
             }
         }
         return false;
     }//modificaLibro
+
 
 
     public List<Libro> getLibri() {
@@ -63,5 +80,20 @@ public class Libreria {
     public void svuotaLibreria() {
         libri.clear();
     }//svuota
+
+
+    public void registraObserver(Observer observer) {
+        observers.add(observer);
+    }//registraObserver
+
+    public void rimuoviObserver(Observer observer) {
+        observers.remove(observer);
+    }//rimuoviObserver
+
+    private void notifyObservers() {
+        for (Observer o : observers) {
+            o.update(Collections.unmodifiableList(libri));
+        }
+    }//notificaObserver
 
 }//libreria

@@ -3,18 +3,24 @@ package com.gestionelibreria.view;
 import com.gestionelibreria.libreria.Libreria;
 import com.gestionelibreria.model.Libro;
 import com.gestionelibreria.model.StatoLettura;
+import com.gestionelibreria.observer.ListaLibriView;
+
 import java.util.Scanner;
 
 public class ConsoleUI {
     private final Libreria libreria;
     private final Scanner scanner;
     private boolean running;
+    private final ListaLibriView listaLibriView;
+
 
     public ConsoleUI() {
         this.libreria = Libreria.getInstance();
         this.scanner = new Scanner(System.in);
         this.running = true;
-    }
+        this.listaLibriView = new ListaLibriView();
+        this.libreria.registraObserver(this.listaLibriView);
+    }//console
 
     public void start() {
         System.out.println("=== GESTIONE LIBRERIA PERSONALE ===");
