@@ -1,5 +1,7 @@
 package com.gestionelibreria.view;
 
+import com.gestionelibreria.command.AggiungiLibroCMD;
+import com.gestionelibreria.command.GestoreComandi;
 import com.gestionelibreria.libreria.Libreria;
 import com.gestionelibreria.model.Libro;
 import com.gestionelibreria.model.StatoLettura;
@@ -39,7 +41,7 @@ public class ConsoleUI {
         System.out.println("3. Cerca libri");
         System.out.println("4. Esci");
         System.out.print("Scegli un'opzione: ");
-    }
+    }//mostraMneu
 
     private int leggiScelta() {
         try {
@@ -47,7 +49,7 @@ public class ConsoleUI {
         } catch (NumberFormatException e) {
             return -1;
         }
-    }
+    }//leggiScelta
 
     private void elaboraScelta(int scelta) {
         switch (scelta) {
@@ -57,7 +59,7 @@ public class ConsoleUI {
             case 4 -> uscita();
             default -> System.out.println("Opzione non valida!");
         }
-    }
+    }//elaboraScelta
 
     private void aggiungiLibro() {
         System.out.println("\n--- AGGIUNGI NUOVO LIBRO ---");
@@ -72,16 +74,14 @@ public class ConsoleUI {
                     .stato(leggiStatoLettura())
                     .build();
 
-            if (libreria.aggiungiLibro(libro)) {
-                System.out.println("Libro aggiunto con successo!");
-            } else {
-                System.out.println("Errore: ISBN già esistente!");
-            }
+            GestoreComandi.eseguiComando(new AggiungiLibroCMD(libro));
+            System.out.println("Comando eseguito: aggiunto libro!");
 
         } catch (Exception e) {
             System.out.println("Errore nella creazione del libro: " + e.getMessage());
         }
-    }
+
+    }//aggiungilibro
 
     private String leggiInput(String prompt) {
         System.out.print(prompt);
@@ -102,7 +102,7 @@ public class ConsoleUI {
             case 3 -> StatoLettura.DA_LEGGERE;
             default -> StatoLettura.DA_LEGGERE;
         };
-    }
+    }//leggiInput
 
     private void visualizzaLibri() {
         System.out.println("\n--- TUTTI I LIBRI (" + libreria.getLibri().size() + ") ---");
@@ -117,17 +117,29 @@ public class ConsoleUI {
             System.out.println("\n" + index + ". " + libro);
             index++;
         }
-    }
+    }//visualizzaLibro
 
     private void cercaLibri() {
         System.out.println("\n--- CERCA LIBRI ---");
-        System.out.println("Funzionalità di ricerca sarà implementata presto!");
-        // Per ora placeholder, implementerai dopo
-    }
+        System.out.println("Funzionalità di ricerca sarà implementata");
+
+    }//cercaLibri
+
+
+
+    private void annullaUltimaOperazione() {
+        GestoreComandi.annullaUltimoComando();
+    }//annullaUltimaOprazione
+
+
+
 
     private void uscita() {
         System.out.println("Arrivederci!");
         running = false;
         scanner.close();
-    }
+    }//esci
+
+
+
 }

@@ -9,7 +9,7 @@ public class RimuoviLibroCMD implements Comando{
     private final String isbn;
     private Libro libroRimosso;
 
-    public RimuoviLibroCMD(Libreria libreria, String isbn) {
+    public RimuoviLibroCMD(String isbn) {
         this.libroRimosso = null;
         this.isbn = isbn;
     }
@@ -37,5 +37,9 @@ public class RimuoviLibroCMD implements Comando{
     public String getIsbn() {
         return isbn;
     }//getIsbn
+
+    public Libro getLibroRimosso() {
+        return libroRimosso;
+    }//getLibroRimosso
 
 }//RimuoviLibro

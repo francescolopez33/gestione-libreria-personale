@@ -6,11 +6,9 @@ import java.util.List;
 
 public class GestoreComandi {   //invoker
 
-    private static List<Comando> storico = null;
+    private static List<Comando> storico = new ArrayList<>();
 
-    public GestoreComandi() {
-        this.storico = new ArrayList<>();
-    }
+    public GestoreComandi() {}
 
     //Esegue comando e lo salva
     public static void eseguiComando(Comando comando) {
