@@ -2,6 +2,7 @@ package com.gestionelibreria.libreria;
 
 import com.gestionelibreria.model.Libro;
 import com.gestionelibreria.observer.Observer;
+import com.gestionelibreria.strategy.OrdinamentoStrategy;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -95,5 +96,10 @@ public class Libreria {
             o.update(Collections.unmodifiableList(libri));
         }
     }//notificaObserver
+
+
+    public List<Libro> getLibriOrdinati(OrdinamentoStrategy strategy) {
+        return strategy.ordina(new ArrayList<>(libri));
+    }//getLibriOrdinati
 
 }//libreria
