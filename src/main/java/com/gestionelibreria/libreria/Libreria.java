@@ -102,4 +102,11 @@ public class Libreria {
         return strategy.ordina(new ArrayList<>(libri));
     }//getLibriOrdinati
 
+
+    public void setLibri(List<Libro> nuovaListaDiLibri) {
+        this.libri.clear();
+        this.libri.addAll(nuovaListaDiLibri);
+        notifyObservers();
+    }//setLibri
+
 }//libreria
