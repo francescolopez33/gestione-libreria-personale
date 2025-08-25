@@ -6,6 +6,7 @@ import com.gestionelibreria.command.ModificaLibroCMD;
 import com.gestionelibreria.command.RimuoviLibroCMD;
 import com.gestionelibreria.filtri.*;
 import com.gestionelibreria.libreria.Libreria;
+import com.gestionelibreria.mediator.LibreriaMediator;
 import com.gestionelibreria.model.Libro;
 import com.gestionelibreria.model.StatoLettura;
 import com.gestionelibreria.observer.Observer;
@@ -23,15 +24,16 @@ import java.util.stream.Collectors;
 public class LibreriaGUI extends JFrame implements Observer{
 
     private JTable tabella;
-    private DefaultTableModel tabellaModel;
+    public DefaultTableModel tabellaModel;
 
 
-    private JTextField filtroField;
-    private JComboBox<String> filtroBox;
-    private JComboBox<String> ordinamentoBox;
+    public JTextField filtroField;
+    public JComboBox<String> filtroBox;
+    public JComboBox<String> ordinamentoBox;
 
-    private JTextField cercaField;
-    private JComboBox<String> cercaTipo;
+    public JTextField cercaField;
+
+    private final LibreriaMediator mediator;
 
     public LibreriaGUI() {
         setTitle("Gestione Libreria Personale");
@@ -39,7 +41,8 @@ public class LibreriaGUI extends JFrame implements Observer{
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        caricaLibreria();
+        this.mediator=new LibreriaMediator(this);
+        mediator.caricaLibreria();
 
         //tabella
         tabellaModel = new DefaultTableModel(
@@ -124,13 +127,14 @@ public class LibreriaGUI extends JFrame implements Observer{
 
 
 
-        aggiungiB.addActionListener(e -> aggiungiLibro());
+        aggiungiB.addActionListener(e -> mediator.onAggiungiClicked());
         //aggiornaB.addActionListener(e -> modificaLibro());
         //eliminaB.addActionListener(e -> rimuoviLibro());
-        indietroB.addActionListener(e -> GestoreComandi.annullaUltimoComando());
-        salvaB.addActionListener(e -> salvaLibreria());
-        caricaB.addActionListener(e -> caricaLibreria());
-        cercaB.addActionListener(e -> cercaLibro());
+        indietroB.addActionListener(e -> mediator.onIndietroClicked());
+        salvaB.addActionListener(e -> mediator.onSalvaClicked());
+        caricaB.addActionListener(e -> mediator.onCaricaClicked());
+        cercaB.addActionListener(e -> mediator.onCercaClicked());
+        cercaField.addActionListener(e -> mediator.onCercaClicked());
 
 
         filtroField.getDocument().addDocumentListener(new DocumentListener() {
@@ -138,14 +142,12 @@ public class LibreriaGUI extends JFrame implements Observer{
             public void removeUpdate(DocumentEvent e) { aggiornaVista(); }
             public void insertUpdate(DocumentEvent e) { aggiornaVista(); }
         });
-        filtroBox.addActionListener(e -> aggiornaVista());
-        ordinamentoBox.addActionListener(e -> aggiornaVista());
+        filtroBox.addActionListener(e -> mediator.onFiltroOrdinamentoChanged());
+        ordinamentoBox.addActionListener(e -> mediator.onFiltroOrdinamentoChanged());
 
 
         Libreria.getInstance().registraObserver(this);
-
-
-        aggiornaVista();
+        mediator.aggiornaVista();
     }//LibGUI
 
 
@@ -153,181 +155,25 @@ public class LibreriaGUI extends JFrame implements Observer{
     @Override
     public void update(List<Libro> libri) {
 
-        aggiornaVista();
+        mediator.aggiornaVista();
     }//update
 
 
 
-    private void aggiornaTabella(List<Libro> libri) {
-        tabellaModel.setRowCount(0);
-        for (Libro l : libri) {
-            tabellaModel.addRow(new Object[]{
-                    l.getTitolo(),
-                    l.getAutore(),
-                    l.getIsbn(),
-                    l.getGenere(),
-                    l.getValutazione(),
-                    l.getStatoLettura(),
-                    "Opzioni"
-            });
-        }
-    }//AggiornaTabella
-
-
     private void aggiornaVista() {
-        List<Libro> libri = Libreria.getInstance().getLibri();
-
-        String filtroTesto = filtroField.getText().trim();
-        String filtroTipo = (String) filtroBox.getSelectedItem();
-
-        if (!"Nessuno".equals(filtroTipo) && !filtroTesto.isEmpty()) {
-            FiltroLibro filtroCorrente = new FiltroConcreto();
-            if ("Titolo".equals(filtroTipo)) {
-
-                libri = new FiltroTitolo(filtroCorrente, filtroTesto).filtra(libri);
-            } else if ("Autore".equals(filtroTipo)) {
-
-                libri = new FiltroAutore(filtroCorrente, filtroTesto).filtra(libri);
-            } else if ("Genere".equals(filtroTipo)) {
-
-                libri = new FiltroGenere(filtroCorrente, filtroTesto).filtra(libri);
-            }
-        }
-
-
-        OrdinamentoStrategy strategy = null;
-        String ordinamentoTipo = (String) ordinamentoBox.getSelectedItem();
-        switch (ordinamentoTipo) {
-            case "Titolo":
-                strategy = new OrdinamentoPerTitolo();
-                break;
-            case "Autore":
-                strategy = new OrdinamentoPerAutore();
-                break;
-            case "Valutazione":
-                strategy = new OrdinamentoPerValutazione();
-                break;
-            case "Stato Lettura":
-                strategy = new OrdinamentoPerStatoLettura();
-                break;
-        }
-
-        if (strategy != null) {
-            libri = strategy.ordina(libri);
-        }
-
-
-        aggiornaTabella(libri);
+        mediator.aggiornaVista();
     }//aggiornaVisita
-
-
-    private void aggiungiLibro() {
-        try{
-        String titolo = JOptionPane.showInputDialog(this, "Titolo:");
-        String autore = JOptionPane.showInputDialog(this, "Autore:");
-        String isbn = JOptionPane.showInputDialog(this, "ISBN:");
-        String genere = JOptionPane.showInputDialog(this, "Genere:");
-        int valutazione = Integer.parseInt(JOptionPane.showInputDialog(this, "Valutazione (1-5):"));
-        StatoLettura stato = StatoLettura.valueOf(
-                JOptionPane.showInputDialog(this, "Stato (LETTO, IN_LETTURA, DA_LEGGERE):")
-                        .toUpperCase()
-        );
-
-        Libro libro = new Libro.Builder()
-                .titolo(titolo)
-                .autore(autore)
-                .isbn(isbn)
-                .genere(genere)
-                .valutazione(valutazione)
-                .stato(stato)
-                .build();
-
-        GestoreComandi.eseguiComando(new AggiungiLibroCMD(libro));
-
-        } catch (IllegalArgumentException e) {
-            JOptionPane.showMessageDialog(this, "Errore di input. Controlla i valori inseriti.", "Errore", JOptionPane.ERROR_MESSAGE);
-        }
-    }//aggiungiLibro
 
 
 
     void modificaLibro(int riga) {
-        if (riga == -1) {
-            JOptionPane.showMessageDialog(this, "Seleziona un libro da modificare.");
-            return;
-        }
-
-
-        try{
-        String isbn = (String) tabellaModel.getValueAt(riga, 2);
-        String nuovoTitolo = JOptionPane.showInputDialog(this, "Nuovo titolo:");
-        String nuovoAutore = JOptionPane.showInputDialog(this, "Nuovo autore:");
-        String nuovoGenere = JOptionPane.showInputDialog(this, "Nuovo genere:");
-        int nuovaValutazione = Integer.parseInt(JOptionPane.showInputDialog(this, "Nuova valutazione (1-5):"));
-        StatoLettura nuovoStato = StatoLettura.valueOf(
-                JOptionPane.showInputDialog(this, "Nuovo stato (LETTO, IN_LETTURA, DA_LEGGERE):")
-                        .toUpperCase()
-        );
-
-        Libro libroModificato = new Libro.Builder()
-                .titolo(nuovoTitolo)
-                .autore(nuovoAutore)
-                .isbn(isbn)
-                .genere(nuovoGenere)
-                .valutazione(nuovaValutazione)
-                .stato(nuovoStato)
-                .build();
-
-        GestoreComandi.eseguiComando(new ModificaLibroCMD(libroModificato));
-        } catch (IllegalArgumentException e) {
-            JOptionPane.showMessageDialog(this, "Errore di input. Controlla i valori inseriti.", "Errore", JOptionPane.ERROR_MESSAGE);
-        }
+        mediator.onModificaClicked(riga);
     }//modificaLibro
 
 
     void rimuoviLibro(int riga) {
-        if (riga == -1) {
-            JOptionPane.showMessageDialog(this, "Seleziona un libro da rimuovere.");
-            return;
-        }
-
-        String isbn = (String) tabellaModel.getValueAt(riga, 2);
-        GestoreComandi.eseguiComando(new RimuoviLibroCMD(isbn));
+        mediator.onRimuoviClicked(riga);
     }//rimuoviLibro
-
-
-    private void salvaLibreria() {
-        FileLibreriaRepository.getInstance().salva(Libreria.getInstance().getLibri());
-
-    }//salvaLibreria
-
-
-    private void caricaLibreria() {
-        List<Libro> libriCaricati = FileLibreriaRepository.getInstance().carica();
-        Libreria.getInstance().setLibri(libriCaricati);
-
-    }//caricaLibreria
-
-
-
-    private void cercaLibro() {
-        String testo = cercaField.getText().trim();
-
-        List<Libro> libri = Libreria.getInstance().getLibri();
-
-        if (!testo.isEmpty()) {
-            RicercaStrategy strategy = new RicercaLibera();
-
-            if (strategy != null) {
-                List<Libro> risultati = libri.stream()
-                        .filter(libro -> strategy.ricercaOK(libro, testo))
-                        .collect(Collectors.toList());
-                aggiornaTabella(risultati);
-            }
-        } else {
-            aggiornaTabella(libri);
-        }
-    }//cercaLibro
 
 
 }//LibreriaGUI
