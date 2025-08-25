@@ -18,6 +18,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class LibreriaGUI extends JFrame implements Observer{
 
@@ -26,9 +27,11 @@ public class LibreriaGUI extends JFrame implements Observer{
 
 
     private JTextField filtroField;
-    private JComboBox<String> filtroComboBox;
-    private JComboBox<String> ordinamentoComboBox;
+    private JComboBox<String> filtroBox;
+    private JComboBox<String> ordinamentoBox;
 
+    private JTextField cercaField;
+    private JComboBox<String> cercaTipo;
 
     public LibreriaGUI() {
         setTitle("Gestione Libreria Personale");
@@ -40,53 +43,94 @@ public class LibreriaGUI extends JFrame implements Observer{
 
         //tabella
         tabellaModel = new DefaultTableModel(
-                new Object[]{"Titolo", "Autore", "ISBN", "Genere", "Valutazione", "Stato"}, 0
-        );
+                new Object[]{"Titolo", "Autore", "ISBN", "Genere", "Valutazione", "Stato", "Opzioni"}, 0
+        ) {
+            @Override
+            public boolean isCellEditable(int riga, int col) {
+                return col== 6;
+            }
+        };
+
         tabella = new JTable(tabellaModel);
-        JScrollPane scrollPane = new JScrollPane(tabella);
-        add(scrollPane, BorderLayout.CENTER);
+        tabella.setFillsViewportHeight(true);
+        tabella.setRowHeight(25);
+        tabella.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        JScrollPane pannelloScroll = new JScrollPane(tabella);
+        add(pannelloScroll, BorderLayout.CENTER);
 
 
+        tabella.getColumn("Opzioni").setCellRenderer(new BottoneRender());
+        tabella.getColumn("Opzioni").setCellEditor(new BottoneEditor(new JCheckBox(), this));
 
-        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 5));
 
+        JPanel topPanel = new JPanel(new BorderLayout());
+
+        //Pannello per la ricerca singola
+        JPanel cercaPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        cercaField = new JTextField(20);
+        JButton cercaB = new JButton("Cerca");
+
+
+        cercaPanel.add(new JLabel("Ricerca: "));
+        cercaPanel.add(cercaField);
+        cercaPanel.add(cercaB);
+        topPanel.add(cercaPanel, BorderLayout.NORTH);
+
+        // Pannello per i filtri e l'ordinamento avanzati (implementazione esistente)
+        JPanel filtroOrdinamentoPanel = new JPanel();
+        filtroOrdinamentoPanel.setLayout(new BoxLayout(filtroOrdinamentoPanel, BoxLayout.X_AXIS));
+
+        filtroBox = new JComboBox<>(new String[]{"Nessuno", "Titolo", "Autore", "Genere"});
         filtroField = new JTextField(20);
-        filtroComboBox = new JComboBox<>(new String[]{"Nessuno", "Titolo", "Autore", "Genere"});
-        ordinamentoComboBox = new JComboBox<>(new String[]{"Nessuno", "Titolo", "Autore", "Valutazione", "Stato Lettura"});
+        ordinamentoBox = new JComboBox<>(new String[]{"Nessuno", "Titolo", "Autore", "Valutazione", "Stato Lettura"});
 
-        topPanel.add(new JLabel("Filtra per:"));
-        topPanel.add(filtroComboBox);
-        topPanel.add(new JLabel("Termine:"));
-        topPanel.add(filtroField);
-        topPanel.add(new JLabel("Ordina per:"));
-        topPanel.add(ordinamentoComboBox);
+        filtroOrdinamentoPanel.add(new JLabel("Filtra: "));
+        filtroOrdinamentoPanel.add(filtroBox);
+        filtroOrdinamentoPanel.add(Box.createHorizontalStrut(10)); // spaziatura
+        filtroOrdinamentoPanel.add(new JLabel("Testo: "));
+        filtroOrdinamentoPanel.add(filtroField);
+        filtroOrdinamentoPanel.add(Box.createHorizontalStrut(10));
+        filtroOrdinamentoPanel.add(new JLabel("Ordina: "));
+        filtroOrdinamentoPanel.add(ordinamentoBox);
 
+        topPanel.add(filtroOrdinamentoPanel, BorderLayout.SOUTH);
         add(topPanel, BorderLayout.NORTH);
 
-        JPanel buttonPanel = new JPanel();
-        JButton addButton = new JButton("Aggiungi");
-        JButton updateButton = new JButton("Modifica");
-        JButton deleteButton = new JButton("Rimuovi");
-        JButton undoButton = new JButton("Undo");
-        JButton saveButton = new JButton("Salva");
-        JButton loadButton = new JButton("Carica");
 
-        buttonPanel.add(addButton);
-        buttonPanel.add(updateButton);
-        buttonPanel.add(deleteButton);
-        buttonPanel.add(undoButton);
-        buttonPanel.add(saveButton);
-        buttonPanel.add(loadButton);
-
-        add(buttonPanel, BorderLayout.SOUTH);
+        JPanel bottone = new JPanel(new BorderLayout());
 
 
-        addButton.addActionListener(e -> aggiungiLibro());
-        updateButton.addActionListener(e -> modificaLibro());
-        deleteButton.addActionListener(e -> rimuoviLibro());
-        undoButton.addActionListener(e -> GestoreComandi.annullaUltimoComando());
-        saveButton.addActionListener(e -> salvaLibreria());
-        loadButton.addActionListener(e -> caricaLibreria());
+        JPanel pannelloBottoni = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        JButton aggiungiB = new JButton("Aggiungi");
+        //JButton aggiornaB = new JButton("Modifica");
+        //JButton eliminaB = new JButton("Rimuovi");
+        JButton indietroB = new JButton("Indietro");
+        pannelloBottoni.add(aggiungiB);
+        //pannelloBottoni.add(aggiornaB);
+        //pannelloBottoni.add(eliminaB);
+        pannelloBottoni.add(indietroB);
+
+
+        JPanel filePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        JButton salvaB = new JButton("Salva");
+        JButton caricaB = new JButton("Carica");
+        filePanel.add(salvaB);
+        filePanel.add(caricaB);
+
+
+        bottone.add(pannelloBottoni, BorderLayout.WEST);
+        bottone.add(filePanel, BorderLayout.EAST);
+        add(bottone, BorderLayout.SOUTH);
+
+
+
+        aggiungiB.addActionListener(e -> aggiungiLibro());
+        //aggiornaB.addActionListener(e -> modificaLibro());
+        //eliminaB.addActionListener(e -> rimuoviLibro());
+        indietroB.addActionListener(e -> GestoreComandi.annullaUltimoComando());
+        salvaB.addActionListener(e -> salvaLibreria());
+        caricaB.addActionListener(e -> caricaLibreria());
+        cercaB.addActionListener(e -> cercaLibro());
 
 
         filtroField.getDocument().addDocumentListener(new DocumentListener() {
@@ -94,8 +138,8 @@ public class LibreriaGUI extends JFrame implements Observer{
             public void removeUpdate(DocumentEvent e) { aggiornaVista(); }
             public void insertUpdate(DocumentEvent e) { aggiornaVista(); }
         });
-        filtroComboBox.addActionListener(e -> aggiornaVista());
-        ordinamentoComboBox.addActionListener(e -> aggiornaVista());
+        filtroBox.addActionListener(e -> aggiornaVista());
+        ordinamentoBox.addActionListener(e -> aggiornaVista());
 
 
         Libreria.getInstance().registraObserver(this);
@@ -108,6 +152,7 @@ public class LibreriaGUI extends JFrame implements Observer{
 
     @Override
     public void update(List<Libro> libri) {
+
         aggiornaVista();
     }//update
 
@@ -122,7 +167,8 @@ public class LibreriaGUI extends JFrame implements Observer{
                     l.getIsbn(),
                     l.getGenere(),
                     l.getValutazione(),
-                    l.getStatoLettura()
+                    l.getStatoLettura(),
+                    "Opzioni"
             });
         }
     }//AggiornaTabella
@@ -132,7 +178,7 @@ public class LibreriaGUI extends JFrame implements Observer{
         List<Libro> libri = Libreria.getInstance().getLibri();
 
         String filtroTesto = filtroField.getText().trim();
-        String filtroTipo = (String) filtroComboBox.getSelectedItem();
+        String filtroTipo = (String) filtroBox.getSelectedItem();
 
         if (!"Nessuno".equals(filtroTipo) && !filtroTesto.isEmpty()) {
             FiltroLibro filtroCorrente = new FiltroConcreto();
@@ -150,7 +196,7 @@ public class LibreriaGUI extends JFrame implements Observer{
 
 
         OrdinamentoStrategy strategy = null;
-        String ordinamentoTipo = (String) ordinamentoComboBox.getSelectedItem();
+        String ordinamentoTipo = (String) ordinamentoBox.getSelectedItem();
         switch (ordinamentoTipo) {
             case "Titolo":
                 strategy = new OrdinamentoPerTitolo();
@@ -205,16 +251,15 @@ public class LibreriaGUI extends JFrame implements Observer{
 
 
 
-    private void modificaLibro() {
-        int row = tabella.getSelectedRow();
-        if (row == -1) {
+    void modificaLibro(int riga) {
+        if (riga == -1) {
             JOptionPane.showMessageDialog(this, "Seleziona un libro da modificare.");
             return;
         }
 
 
         try{
-        String isbn = (String) tabellaModel.getValueAt(row, 2);
+        String isbn = (String) tabellaModel.getValueAt(riga, 2);
         String nuovoTitolo = JOptionPane.showInputDialog(this, "Nuovo titolo:");
         String nuovoAutore = JOptionPane.showInputDialog(this, "Nuovo autore:");
         String nuovoGenere = JOptionPane.showInputDialog(this, "Nuovo genere:");
@@ -240,27 +285,49 @@ public class LibreriaGUI extends JFrame implements Observer{
     }//modificaLibro
 
 
-    private void rimuoviLibro() {
-        int row = tabella.getSelectedRow();
-        if (row == -1) {
+    void rimuoviLibro(int riga) {
+        if (riga == -1) {
             JOptionPane.showMessageDialog(this, "Seleziona un libro da rimuovere.");
             return;
         }
 
-        String isbn = (String) tabellaModel.getValueAt(row, 2);
+        String isbn = (String) tabellaModel.getValueAt(riga, 2);
         GestoreComandi.eseguiComando(new RimuoviLibroCMD(isbn));
     }//rimuoviLibro
+
 
     private void salvaLibreria() {
         FileLibreriaRepository.getInstance().salva(Libreria.getInstance().getLibri());
 
     }//salvaLibreria
 
+
     private void caricaLibreria() {
         List<Libro> libriCaricati = FileLibreriaRepository.getInstance().carica();
         Libreria.getInstance().setLibri(libriCaricati);
-        JOptionPane.showMessageDialog(this, "Libreria caricata con successo!");
+
     }//caricaLibreria
+
+
+
+    private void cercaLibro() {
+        String testo = cercaField.getText().trim();
+
+        List<Libro> libri = Libreria.getInstance().getLibri();
+
+        if (!testo.isEmpty()) {
+            RicercaStrategy strategy = new RicercaLibera();
+
+            if (strategy != null) {
+                List<Libro> risultati = libri.stream()
+                        .filter(libro -> strategy.ricercaOK(libro, testo))
+                        .collect(Collectors.toList());
+                aggiornaTabella(risultati);
+            }
+        } else {
+            aggiornaTabella(libri);
+        }
+    }//cercaLibro
 
 
 }//LibreriaGUI
