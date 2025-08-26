@@ -15,7 +15,6 @@ import com.gestionelibreria.strategy.*;
 
 import javax.swing.*;
 
-import java.awt.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,38 +29,53 @@ public class LibreriaMediator {
 
     public void aggiornaVista() {
         List<Libro> libri = Libreria.getInstance().getLibri();
+        FiltroLibro filtro = new FiltroConcreto();
 
-        String filtroTesto = gui.filtroField.getText().trim();
-        String filtroTipo = (String) gui.filtroBox.getSelectedItem();
 
-        if (!"Nessuno".equals(filtroTipo) && !filtroTesto.isEmpty()) {
-            FiltroLibro filtroCorrente = new FiltroConcreto();
-            if ("Titolo".equals(filtroTipo)) {
-                libri = new FiltroTitolo(filtroCorrente, filtroTesto).filtra(libri);
-            } else if ("Autore".equals(filtroTipo)) {
-                libri = new FiltroAutore(filtroCorrente, filtroTesto).filtra(libri);
-            } else if ("Genere".equals(filtroTipo)) {
-                libri = new FiltroGenere(filtroCorrente, filtroTesto).filtra(libri);
-            }
+        String genere = gui.getFiltroGenere().getText().trim();
+        if (!genere.isEmpty()) {
+            filtro = new FiltroGenere(filtro, genere);
         }
 
+
+        StatoLettura stato = (StatoLettura) gui.getFiltroStato().getSelectedItem();
+        if (stato != null) {
+            filtro = new FiltroStatoLettura(filtro, stato);
+        }
+
+
+        String valMinText = gui.getFiltroValMin().getText().trim();
+        if (!valMinText.isEmpty()) {
+            try {
+                int valMin = Integer.parseInt(valMinText);
+                filtro = new FiltroValutazioneMinima(filtro, valMin);
+            } catch (NumberFormatException ignored) {}
+        }
+
+        String valMaxText = gui.getFiltroValMax().getText().trim();
+        if (!valMaxText.isEmpty()) {
+            try {
+                int valMax = Integer.parseInt(valMaxText);
+                filtro = new FiltroValutazioneMassima(filtro, valMax);
+            } catch (NumberFormatException ignored) {}
+        }
+
+
+        libri = filtro.filtra(libri);
+
+        //Ordinamento
         OrdinamentoStrategy strategy = null;
-        String ordinamentoTipo = (String) gui.ordinamentoBox.getSelectedItem();
+        String ordinamentoTipo = (String) gui.getOrdinamentoBox().getSelectedItem();
         switch (ordinamentoTipo) {
             case "Titolo":
-                strategy = new OrdinamentoPerTitolo();
-                break;
+                strategy = new OrdinamentoPerTitolo(); break;
             case "Autore":
-                strategy = new OrdinamentoPerAutore();
-                break;
+                strategy = new OrdinamentoPerAutore(); break;
             case "Valutazione":
-                strategy = new OrdinamentoPerValutazione();
-                break;
+                strategy = new OrdinamentoPerValutazione(); break;
             case "Stato Lettura":
-                strategy = new OrdinamentoPerStatoLettura();
-                break;
+                strategy = new OrdinamentoPerStatoLettura(); break;
         }
-
         if (strategy != null) {
             libri = strategy.ordina(libri);
         }
@@ -72,9 +86,9 @@ public class LibreriaMediator {
 
 
     private void aggiornaTabella(List<Libro> libri) {
-        gui.tabellaModel.setRowCount(0);
+        gui.getTabellaModel().setRowCount(0);
         for (Libro l : libri) {
-            gui.tabellaModel.addRow(new Object[]{
+            gui.getTabellaModel().addRow(new Object[]{
                     l.getTitolo(),
                     l.getAutore(),
                     l.getIsbn(),
@@ -88,17 +102,20 @@ public class LibreriaMediator {
 
 
 
-    public void onAggiungiClicked() {
+    public void aggiuntaLibro() {
         try {
             String titolo = JOptionPane.showInputDialog(gui, "Titolo:");
             String autore = JOptionPane.showInputDialog(gui, "Autore:");
             String isbn = JOptionPane.showInputDialog(gui, "ISBN:");
             String genere = JOptionPane.showInputDialog(gui, "Genere:");
             int valutazione = Integer.parseInt(JOptionPane.showInputDialog(gui, "Valutazione (1-5):"));
-            StatoLettura stato = StatoLettura.valueOf(
-                    JOptionPane.showInputDialog(gui, "Stato (LETTO, IN_LETTURA, DA_LEGGERE):")
-                            .toUpperCase()
-            );
+            JComboBox<StatoLettura> stato = new JComboBox<>(StatoLettura.values());
+            int res = JOptionPane.showConfirmDialog(gui, stato, "Seleziona Stato Lettura", JOptionPane.OK_CANCEL_OPTION);
+
+            if (res != JOptionPane.OK_OPTION) {
+                return;
+            }
+            StatoLettura statoFin = (StatoLettura) stato.getSelectedItem();
 
             Libro libro = new Libro.Builder()
                     .titolo(titolo)
@@ -106,31 +123,35 @@ public class LibreriaMediator {
                     .isbn(isbn)
                     .genere(genere)
                     .valutazione(valutazione)
-                    .stato(stato)
+                    .stato(statoFin)
                     .build();
 
             GestoreComandi.eseguiComando(new AggiungiLibroCMD(libro));
         } catch (IllegalArgumentException e) {
             JOptionPane.showMessageDialog(gui, "Errore di input. Controlla i valori inseriti.", "Errore", JOptionPane.ERROR_MESSAGE);
         }
-    }//
+    }//aggiuntaLibro
 
-    public void onModificaClicked(int riga) {
+    public void modificaLibroSelezionato(int riga) {
         if (riga == -1) {
             JOptionPane.showMessageDialog(gui, "Seleziona un libro da modificare.");
             return;
         }
 
         try {
-            String isbn = (String) gui.tabellaModel.getValueAt(riga, 2);
+            String isbn = (String) gui.getTabellaModel().getValueAt(riga, 2);
             String nuovoTitolo = JOptionPane.showInputDialog(gui, "Nuovo titolo:");
             String nuovoAutore = JOptionPane.showInputDialog(gui, "Nuovo autore:");
             String nuovoGenere = JOptionPane.showInputDialog(gui, "Nuovo genere:");
             int nuovaValutazione = Integer.parseInt(JOptionPane.showInputDialog(gui, "Nuova valutazione (1-5):"));
-            StatoLettura nuovoStato = StatoLettura.valueOf(
-                    JOptionPane.showInputDialog(gui, "Nuovo stato (LETTO, IN_LETTURA, DA_LEGGERE):")
-                            .toUpperCase()
-            );
+
+            JComboBox<StatoLettura> statoCombo = new JComboBox<>(StatoLettura.values());
+            int res = JOptionPane.showConfirmDialog(gui, statoCombo, "Seleziona Nuovo Stato", JOptionPane.OK_CANCEL_OPTION);
+            if (res != JOptionPane.OK_OPTION) {
+                return;
+            }
+            StatoLettura nuovoStato = (StatoLettura) statoCombo.getSelectedItem();
+
 
             Libro libroModificato = new Libro.Builder()
                     .titolo(nuovoTitolo)
@@ -145,28 +166,28 @@ public class LibreriaMediator {
         } catch (IllegalArgumentException e) {
             JOptionPane.showMessageDialog(gui, "Errore di input. Controlla i valori inseriti.", "Errore", JOptionPane.ERROR_MESSAGE);
         }
-    }//onModificaClick
+    }//modificaLibroSelezionato
 
 
-    public void onRimuoviClicked(int riga) {
+    public void rimuoviLibroSelezionato(int riga) {
         if (riga == -1) {
             JOptionPane.showMessageDialog(gui, "Seleziona un libro da rimuovere.");
             return;
         }
 
-        String isbn = (String) gui.tabellaModel.getValueAt(riga, 2);
+        String isbn = (String) gui.getTabellaModel().getValueAt(riga, 2);
         GestoreComandi.eseguiComando(new RimuoviLibroCMD(isbn));
     }//rimuovi
 
-    public void onIndietroClicked() {
+    public void annullaUltima() {
         GestoreComandi.annullaUltimoComando();
     }//indietro
 
-    public void onSalvaClicked() {
+    public void salvaLibreria() {
         FileLibreriaRepository.getInstance().salva(Libreria.getInstance().getLibri());
     }//salva
 
-    public void onCaricaClicked() {
+    public void caricaLibreriaDaFile() {
         caricaLibreria();
     }//carica
 
@@ -175,8 +196,8 @@ public class LibreriaMediator {
         Libreria.getInstance().setLibri(libriCaricati);
     }//carica
 
-    public void onCercaClicked() {
-        String testo = gui.cercaField.getText().trim();
+    public void cercaLibri() {
+        String testo = gui.getCercaField().getText().trim();
         List<Libro> libri = Libreria.getInstance().getLibri();
 
         if (!testo.isEmpty()) {
@@ -192,7 +213,7 @@ public class LibreriaMediator {
         }
     }//cerca
 
-    public void onFiltroOrdinamentoChanged() {
+    public void applicaFiltriOrdinamento() {
         aggiornaVista();
     }//filtroOrdin
 

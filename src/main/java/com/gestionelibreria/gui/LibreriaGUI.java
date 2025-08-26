@@ -1,43 +1,37 @@
 package com.gestionelibreria.gui;
 
-import com.gestionelibreria.command.AggiungiLibroCMD;
-import com.gestionelibreria.command.GestoreComandi;
-import com.gestionelibreria.command.ModificaLibroCMD;
-import com.gestionelibreria.command.RimuoviLibroCMD;
-import com.gestionelibreria.filtri.*;
 import com.gestionelibreria.libreria.Libreria;
 import com.gestionelibreria.mediator.LibreriaMediator;
 import com.gestionelibreria.model.Libro;
 import com.gestionelibreria.model.StatoLettura;
 import com.gestionelibreria.observer.Observer;
-import com.gestionelibreria.persistenza.FileLibreriaRepository;
-import com.gestionelibreria.strategy.*;
 
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class LibreriaGUI extends JFrame implements Observer{
 
     private JTable tabella;
-    public DefaultTableModel tabellaModel;
+    private DefaultTableModel tabellaModel;
 
 
-    public JTextField filtroField;
-    public JComboBox<String> filtroBox;
-    public JComboBox<String> ordinamentoBox;
+    private JComboBox<String> ordinamentoBox;
 
-    public JTextField cercaField;
+    private JTextField cercaField;
 
     private final LibreriaMediator mediator;
 
+    private JTextField filtroGenere;
+    private JComboBox<StatoLettura> filtroStato;
+    private JTextField filtroValMin;
+    private JTextField filtroValMax;
+
+
     public LibreriaGUI() {
         setTitle("Gestione Libreria Personale");
-        setSize(800, 600);
+        setSize(900, 650);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
@@ -70,56 +64,83 @@ public class LibreriaGUI extends JFrame implements Observer{
 
         //Pannello per la ricerca singola
         JPanel cercaPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        cercaPanel.setBorder(BorderFactory.createTitledBorder("Ricerca"));
         cercaField = new JTextField(20);
         JButton cercaB = new JButton("Cerca");
-
-
-        cercaPanel.add(new JLabel("Ricerca: "));
+        cercaB.setPreferredSize(new Dimension(100, 30));
+        cercaPanel.add(new JLabel("Testo: "));
         cercaPanel.add(cercaField);
         cercaPanel.add(cercaB);
-        topPanel.add(cercaPanel, BorderLayout.NORTH);
+        //topPanel.add(cercaPanel, BorderLayout.NORTH);
 
-        // Pannello per i filtri e l'ordinamento avanzati (implementazione esistente)
-        JPanel filtroOrdinamentoPanel = new JPanel();
-        filtroOrdinamentoPanel.setLayout(new BoxLayout(filtroOrdinamentoPanel, BoxLayout.X_AXIS));
 
-        filtroBox = new JComboBox<>(new String[]{"Nessuno", "Titolo", "Autore", "Genere"});
-        filtroField = new JTextField(20);
-        ordinamentoBox = new JComboBox<>(new String[]{"Nessuno", "Titolo", "Autore", "Valutazione", "Stato Lettura"});
+        //filtri e ordinamento
+        JPanel ordinamentoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        ordinamentoPanel.setBorder(BorderFactory.createTitledBorder("Ordinamento"));
 
-        filtroOrdinamentoPanel.add(new JLabel("Filtra: "));
-        filtroOrdinamentoPanel.add(filtroBox);
-        filtroOrdinamentoPanel.add(Box.createHorizontalStrut(10)); // spaziatura
-        filtroOrdinamentoPanel.add(new JLabel("Testo: "));
-        filtroOrdinamentoPanel.add(filtroField);
-        filtroOrdinamentoPanel.add(Box.createHorizontalStrut(10));
-        filtroOrdinamentoPanel.add(new JLabel("Ordina: "));
-        filtroOrdinamentoPanel.add(ordinamentoBox);
+        ordinamentoBox = new JComboBox<>(new String[]{
+                "Nessuno", "Titolo", "Autore", "Valutazione", "Stato Lettura"
+        });
+        ordinamentoPanel.add(new JLabel("Ordina per:"));
+        ordinamentoPanel.add(ordinamentoBox);
 
-        topPanel.add(filtroOrdinamentoPanel, BorderLayout.SOUTH);
+
+        JPanel ricercaOrdinamentoPanel = new JPanel(new GridLayout(1, 2, 15, 0));
+        ricercaOrdinamentoPanel.add(cercaPanel);
+        ricercaOrdinamentoPanel.add(ordinamentoPanel);
+        topPanel.add(ricercaOrdinamentoPanel, BorderLayout.NORTH);
+
+
+        //Pannello per i filtri
+        JPanel filtroPanel = new JPanel(new GridLayout(2, 2, 15, 8));
+        filtroPanel.setBorder(BorderFactory.createTitledBorder("Filtri"));
+
+        filtroGenere = new JTextField(10);
+        filtroStato = new JComboBox<>();
+        filtroStato.addItem(null);
+        filtroStato.addItem(StatoLettura.LETTO);
+        filtroStato.addItem(StatoLettura.IN_LETTURA);
+        filtroStato.addItem(StatoLettura.DA_LEGGERE);
+        filtroValMin = new JTextField(3);
+        filtroValMax = new JTextField(3);
+
+        filtroPanel.add(new JLabel("Genere:"));
+        filtroPanel.add(filtroGenere);
+        filtroPanel.add(new JLabel("Stato:"));
+        filtroPanel.add(filtroStato);
+        filtroPanel.add(new JLabel("Val. Min:"));
+        filtroPanel.add(filtroValMin);
+        filtroPanel.add(new JLabel("Val. Max:"));
+        filtroPanel.add(filtroValMax);
+
+        topPanel.add(filtroPanel, BorderLayout.SOUTH);
+
         add(topPanel, BorderLayout.NORTH);
 
 
+        //Bottoni sotto sinistra
         JPanel bottone = new JPanel(new BorderLayout());
+        JPanel pannelloBottoni = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
+        JPanel filePanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
 
-
-        JPanel pannelloBottoni = new JPanel(new FlowLayout(FlowLayout.CENTER));
         JButton aggiungiB = new JButton("Aggiungi");
-        //JButton aggiornaB = new JButton("Modifica");
-        //JButton eliminaB = new JButton("Rimuovi");
         JButton indietroB = new JButton("Indietro");
-        pannelloBottoni.add(aggiungiB);
-        //pannelloBottoni.add(aggiornaB);
-        //pannelloBottoni.add(eliminaB);
-        pannelloBottoni.add(indietroB);
-
-
-        JPanel filePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         JButton salvaB = new JButton("Salva");
         JButton caricaB = new JButton("Carica");
+
+        //Font
+        Font fontBottoni = new Font("Arial", Font.BOLD, 14);
+        Dimension dimensioneGrande = new Dimension(130, 40);
+        JButton[] bottoni = {aggiungiB, indietroB, salvaB, caricaB};
+        for (JButton b : bottoni) {
+            b.setFont(fontBottoni);
+            b.setPreferredSize(dimensioneGrande);
+        }
+
+        pannelloBottoni.add(aggiungiB);
+        pannelloBottoni.add(indietroB);
         filePanel.add(salvaB);
         filePanel.add(caricaB);
-
 
         bottone.add(pannelloBottoni, BorderLayout.WEST);
         bottone.add(filePanel, BorderLayout.EAST);
@@ -127,23 +148,14 @@ public class LibreriaGUI extends JFrame implements Observer{
 
 
 
-        aggiungiB.addActionListener(e -> mediator.onAggiungiClicked());
-        //aggiornaB.addActionListener(e -> modificaLibro());
-        //eliminaB.addActionListener(e -> rimuoviLibro());
-        indietroB.addActionListener(e -> mediator.onIndietroClicked());
-        salvaB.addActionListener(e -> mediator.onSalvaClicked());
-        caricaB.addActionListener(e -> mediator.onCaricaClicked());
-        cercaB.addActionListener(e -> mediator.onCercaClicked());
-        cercaField.addActionListener(e -> mediator.onCercaClicked());
+        aggiungiB.addActionListener(e -> mediator.aggiuntaLibro());
+        indietroB.addActionListener(e -> mediator.annullaUltima());
+        salvaB.addActionListener(e -> mediator.salvaLibreria());
+        caricaB.addActionListener(e -> mediator.caricaLibreriaDaFile());
+        cercaB.addActionListener(e -> mediator.cercaLibri());
+        cercaField.addActionListener(e -> mediator.cercaLibri());
+        ordinamentoBox.addActionListener(e -> mediator.applicaFiltriOrdinamento());
 
-
-        filtroField.getDocument().addDocumentListener(new DocumentListener() {
-            public void changedUpdate(DocumentEvent e) { aggiornaVista(); }
-            public void removeUpdate(DocumentEvent e) { aggiornaVista(); }
-            public void insertUpdate(DocumentEvent e) { aggiornaVista(); }
-        });
-        filtroBox.addActionListener(e -> mediator.onFiltroOrdinamentoChanged());
-        ordinamentoBox.addActionListener(e -> mediator.onFiltroOrdinamentoChanged());
 
 
         Libreria.getInstance().registraObserver(this);
@@ -167,13 +179,22 @@ public class LibreriaGUI extends JFrame implements Observer{
 
 
     void modificaLibro(int riga) {
-        mediator.onModificaClicked(riga);
+        mediator.modificaLibroSelezionato(riga);
     }//modificaLibro
 
 
     void rimuoviLibro(int riga) {
-        mediator.onRimuoviClicked(riga);
+        mediator.rimuoviLibroSelezionato(riga);
     }//rimuoviLibro
 
+
+    //Metodi getter per accedere ai componenti privati
+    public DefaultTableModel getTabellaModel() { return tabellaModel; }
+    public JComboBox<String> getOrdinamentoBox() { return ordinamentoBox; }
+    public JTextField getCercaField() { return cercaField; }
+    public JTextField getFiltroGenere() { return filtroGenere; }
+    public JComboBox<StatoLettura> getFiltroStato() { return filtroStato; }
+    public JTextField getFiltroValMin() { return filtroValMin; }
+    public JTextField getFiltroValMax() { return filtroValMax; }
 
 }//LibreriaGUI
