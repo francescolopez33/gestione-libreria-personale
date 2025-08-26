@@ -45,11 +45,20 @@ class CommandTest {
 
     @Test
     void testAggiungiLibroCMDIsbnDuplicato() {
-        libreria.aggiungiLibro(libro); // già presente
-        AggiungiLibroCMD cmd = new AggiungiLibroCMD(libro);
+        Libreria libreria = Libreria.getInstance();
+        libreria.svuotaLibreria();
 
-        boolean aggiunto = libreria.aggiungiLibro(libro);
-        assertFalse(aggiunto, "Non deve aggiungere un ISBN duplicato");
+        Libro libroDuplicato = new Libro.Builder()
+                .titolo("Il Signore degli Anelli")
+                .autore("J.R.R. Tolkien")
+                .isbn("978-8845292613")
+                .build();
+        libreria.aggiungiLibro(libroDuplicato);
+
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            libreria.aggiungiLibro(libroDuplicato);
+        }, "L'aggiunta di un libro con ISBN duplicato deve lanciare un'IllegalArgumentException.");
     }//aggiungiLibroDuplicato
 
 

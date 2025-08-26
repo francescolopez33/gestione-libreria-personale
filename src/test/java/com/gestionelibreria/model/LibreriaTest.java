@@ -34,8 +34,7 @@ class LibreriaTest {
 
     @Test
     void testAggiungiLibroValido() {
-        boolean risultato = libreria.aggiungiLibro(libro1);
-        assertTrue(risultato);
+        libreria.aggiungiLibro(libro1);
         assertEquals(1, libreria.getLibri().size());
     }//testAggiungiLibroOk
 
@@ -46,11 +45,12 @@ class LibreriaTest {
         Libro libroDuplicato = new Libro.Builder()
                 .titolo("Altro Titolo")
                 .autore("Altro Autore")
-                .isbn("123") //uguale isbn
+                .isbn("123") // stesso ISBN
                 .build();
 
-        boolean risultato = libreria.aggiungiLibro(libroDuplicato);
-        assertFalse(risultato);
+        assertThrows(IllegalArgumentException.class, () -> libreria.aggiungiLibro(libroDuplicato));
+
+
         assertEquals(1, libreria.getLibri().size());
     }//testAggiungiDuplicato
 

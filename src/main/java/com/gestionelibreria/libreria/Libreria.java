@@ -34,18 +34,17 @@ public class Libreria {
 
 
 
-    public boolean aggiungiLibro(Libro libro) {
+    public void aggiungiLibro(Libro libro) {
         //Controllo dell'ISBN
         for (Libro l : libri) {
             if (l.getIsbn().equals(libro.getIsbn())) {
-                return false;
+                throw new IllegalArgumentException("Errore: un libro con questo ISBN è già presente.");
             }
         }
-        boolean successo = libri.add(libro);
-        if (successo) {
+        libri.add(libro);
+
             notifyObservers();
-        }
-        return successo;
+
     }//aggiungiLibro
 
 

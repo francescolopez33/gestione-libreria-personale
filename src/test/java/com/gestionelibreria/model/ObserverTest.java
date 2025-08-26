@@ -91,11 +91,10 @@ class ObserverTest {
         Libro libro1 = new Libro.Builder().titolo("Test1").autore("Autore").isbn("123").build();
         libreria.aggiungiLibro(libro1);
         ossTest.reset();
+
         Libro libro2 = new Libro.Builder().titolo("Test2").autore("Autore").isbn("123").build();
-        boolean risultato = libreria.aggiungiLibro(libro2);
 
-
-        assertFalse(risultato, "L'aggiunta di un ISBN duplicato doveva fallire");
+        assertThrows(IllegalArgumentException.class, () -> libreria.aggiungiLibro(libro2));
         assertFalse(ossTest.isNotified(), "L'Observer NON doveva essere notificato se l'aggiunta è fallita");
     }//testObserverNonNotificatoSeAggiuntaFallisce
 

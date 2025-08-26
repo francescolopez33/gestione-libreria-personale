@@ -14,18 +14,21 @@ public class AggiungiLibroCMD implements Comando{
 
     @Override
     public void esegui() {
+
         Libreria.getInstance().aggiungiLibro(libro);
     }//esegui
 
 
     @Override
     public void annulla() {
+
         Libreria.getInstance().rimuoviLibro(libro.getIsbn());
     }//annulla
 
 
 
     public Libro getLibro() {
+
         return libro;
     }//getLibro
 

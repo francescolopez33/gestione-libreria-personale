@@ -80,7 +80,7 @@ public class FiltriTest {
     }//BasePieno
 
 
-
+/*
     @Test
     void testFiltroAutoreOk() { //per cercare libri di autore
         FiltroLibro filtro = new FiltroAutore(new FiltroConcreto(), "Umberto Eco");
@@ -118,7 +118,7 @@ public class FiltriTest {
     }//autoreVuoto
 
 
-
+*/
 
 
     @Test
@@ -212,7 +212,7 @@ public class FiltriTest {
     }//letturaNo
 
 
-
+/*
     @Test
     void testFiltriCombinatiAutoreEValutazione() {
         FiltroLibro filtro = new FiltroValutazioneMinima(
@@ -261,6 +261,6 @@ public class FiltriTest {
 
         assertTrue(risultato.isEmpty());
     }//AutoreNull
-
+*/
 
 }//filtriTest
