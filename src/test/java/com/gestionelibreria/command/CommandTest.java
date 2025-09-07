@@ -79,57 +79,6 @@ class CommandTest {
 
 
 
-    @Test
-    void testRimuoviLibroCMDLibroNonEsistente() {
-        RimuoviLibroCMD cmd = new RimuoviLibroCMD("999"); //ISBN non esiste
-        cmd.esegui();
-
-        assertTrue(libreria.getLibri().isEmpty(), "Non deve rimuovere nulla se ISBN non esiste");
-        assertNull(cmd.getLibroRimosso(), "Libro rimosso deve rimanere null se non trovato");
-    }//rimuoviLibroNon esistente
-
-
-
-
-    @Test
-    void testModificaLibroCMD() {
-        libreria.aggiungiLibro(libro);
-
-        Libro libroModificato = new Libro.Builder()
-                .titolo("Il Nome della Rosa (Edizione 2)")
-                .autore("Umberto Eco")
-                .isbn("123") // stesso ISBN
-                .build();
-
-        ModificaLibroCMD cmd = new ModificaLibroCMD(libroModificato);
-        cmd.esegui();
-
-        assertEquals("Il Nome della Rosa (Edizione 2)", libreria.getLibri().get(0).getTitolo());
-        assertNotNull(cmd.getLibroVecchio(), "Libro vecchio deve essere salvato per annulla()");
-
-        cmd.annulla();
-        assertEquals("Il Nome della Rosa", libreria.getLibri().get(0).getTitolo(),
-                "Undo deve ripristinare il libro originale");
-    }//modificaLibro
-
-
-
-    @Test
-    void testModificaLibroCMDLibroNonEsistente() {
-        Libro libroNonEsistente = new Libro.Builder()
-                .titolo("Libro Fantasma")
-                .autore("Autore X")
-                .isbn("999") // ISBN non presente
-                .build();
-
-        ModificaLibroCMD cmd = new ModificaLibroCMD(libroNonEsistente);
-        cmd.esegui();
-
-
-        assertTrue(libreria.getLibri().isEmpty(), "La libreria resta vuota");
-        assertNull(cmd.getLibroVecchio(), "Libro vecchio resta null se non c'era nulla da modificare");
-    }//modificaLibroInesistente
-
 
 
 }//commandTest

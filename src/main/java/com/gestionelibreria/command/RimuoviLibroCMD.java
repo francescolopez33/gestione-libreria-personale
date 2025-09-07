@@ -34,12 +34,7 @@ public class RimuoviLibroCMD implements Comando{
         }
     }//annulla
 
-    public String getIsbn() {
-        return isbn;
-    }//getIsbn
 
-    public Libro getLibroRimosso() {
-        return libroRimosso;
-    }//getLibroRimosso
+
 
 }//RimuoviLibro

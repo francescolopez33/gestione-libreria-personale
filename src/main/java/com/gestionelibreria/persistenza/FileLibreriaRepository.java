@@ -37,7 +37,6 @@ public class FileLibreriaRepository {
 
 
     //Salva la lista dei libri sul file JSON e sovrascrive il contenuto precedente.
-
     public void salva(List<Libro> libri) {
         try (FileWriter writer = new FileWriter(FILE_PATH)) {
             gson.toJson(libri, writer);
@@ -48,8 +47,7 @@ public class FileLibreriaRepository {
 
 
 
-     //Carica la lista dei libri da file JSON e se il file non esiste o è vuoto, restituisce una lista vuota.
-
+    //Carica la lista dei libri da file JSON e se il file non esiste o è vuoto, restituisce una lista vuota.
     public List<Libro> carica() {
         try (FileReader reader = new FileReader(FILE_PATH)) {
             Type listType = new TypeToken<List<Libro>>() {}.getType();

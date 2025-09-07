@@ -80,46 +80,6 @@ public class FiltriTest {
     }//BasePieno
 
 
-/*
-    @Test
-    void testFiltroAutoreOk() { //per cercare libri di autore
-        FiltroLibro filtro = new FiltroAutore(new FiltroConcreto(), "Umberto Eco");
-        List<Libro> risultato = filtro.filtra(libriDiTest);
-
-        assertEquals(2, risultato.size());
-        assertTrue(risultato.stream().allMatch(l -> l.getAutore().equals("Umberto Eco")));
-    }//autoreOk
-
-
-    @Test
-    void testFiltroAutoreNo() {
-        FiltroLibro filtro = new FiltroAutore(new FiltroConcreto(), "Autore Inesistente");
-        List<Libro> risultato = filtro.filtra(libriDiTest);
-
-        assertTrue(risultato.isEmpty());
-    }//AutoreNo
-
-
-    @Test
-    void testFiltroAutoreminuscolo() {
-        FiltroLibro filtro = new FiltroAutore(new FiltroConcreto(), "umberto eco");
-        List<Libro> risultato = filtro.filtra(libriDiTest);
-
-        assertEquals(2, risultato.size());
-    }//minuscolo
-
-
-    @Test
-    void testFiltroAutoreStringaVuota() {
-        FiltroLibro filtro = new FiltroAutore(new FiltroConcreto(), "");
-        List<Libro> risultato = filtro.filtra(libriDiTest);
-
-        assertTrue(risultato.isEmpty());
-    }//autoreVuoto
-
-
-*/
-
 
     @Test
     void testFiltroGenereOK() {
@@ -212,55 +172,5 @@ public class FiltriTest {
     }//letturaNo
 
 
-/*
-    @Test
-    void testFiltriCombinatiAutoreEValutazione() {
-        FiltroLibro filtro = new FiltroValutazioneMinima(
-                new FiltroAutore(
-                        new FiltroConcreto(),
-                        "Umberto Eco"),
-                4);
-
-        List<Libro> risultato = filtro.filtra(libriDiTest);
-
-        assertEquals(2, risultato.size());
-        assertTrue(risultato.stream().allMatch(l ->
-                l.getAutore().equals("Umberto Eco") && l.getValutazione() >= 4));
-    }//AutoreEvalutazione
-
-
-
-    @Test
-    void testFiltriCombinatiMultipliSenzaRisultati() {
-        FiltroLibro filtro = new FiltroValutazioneMinima(
-                new FiltroAutore(
-                        new FiltroGenere(
-                                new FiltroConcreto(),
-                                "Horror"),
-                        "Umberto Eco"),
-                5);
-
-        List<Libro> risultato = filtro.filtra(libriDiTest);
-        assertTrue(risultato.isEmpty());
-    }//FiltriMultipli
-
-
-    @Test
-    void testFiltroConListaNull() {
-        FiltroLibro filtro = new FiltroConcreto();
-        List<Libro> risultato = filtro.filtra(null);
-
-        assertNull(risultato);
-    }//ListaNull
-
-
-    @Test
-    void testFiltroAutoreNull() {
-        FiltroLibro filtro = new FiltroAutore(new FiltroConcreto(), null);
-        List<Libro> risultato = filtro.filtra(libriDiTest);
-
-        assertTrue(risultato.isEmpty());
-    }//AutoreNull
-*/
 
 }//filtriTest

@@ -5,8 +5,11 @@ import com.gestionelibreria.mediator.LibreriaMediator;
 import com.gestionelibreria.model.Libro;
 import com.gestionelibreria.model.StatoLettura;
 import com.gestionelibreria.observer.Observer;
+import com.gestionelibreria.observer.SalvataggioAutoObserver;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
@@ -37,6 +40,9 @@ public class LibreriaGUI extends JFrame implements Observer{
 
         this.mediator=new LibreriaMediator(this);
         mediator.caricaLibreria();
+
+        Libreria.getInstance().registraObserver(this);
+        Libreria.getInstance().registraObserver(new SalvataggioAutoObserver());
 
         //tabella
         tabellaModel = new DefaultTableModel(
@@ -71,7 +77,7 @@ public class LibreriaGUI extends JFrame implements Observer{
         cercaPanel.add(new JLabel("Testo: "));
         cercaPanel.add(cercaField);
         cercaPanel.add(cercaB);
-        //topPanel.add(cercaPanel, BorderLayout.NORTH);
+
 
 
         //filtri e ordinamento
@@ -129,7 +135,7 @@ public class LibreriaGUI extends JFrame implements Observer{
         JButton caricaB = new JButton("Carica");
 
         //Font
-        Font fontBottoni = new Font("Arial", Font.BOLD, 14);
+        Font fontBottoni = new Font("Arial", Font.BOLD, 16);
         Dimension dimensioneGrande = new Dimension(130, 40);
         JButton[] bottoni = {aggiungiB, indietroB, salvaB, caricaB};
         for (JButton b : bottoni) {
@@ -157,6 +163,18 @@ public class LibreriaGUI extends JFrame implements Observer{
         ordinamentoBox.addActionListener(e -> mediator.applicaFiltriOrdinamento());
 
 
+        DocumentListener docListener = new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) { mediator.applicaFiltriOrdinamento(); }
+            @Override
+            public void removeUpdate(DocumentEvent e) { mediator.applicaFiltriOrdinamento(); }
+            @Override
+            public void changedUpdate(DocumentEvent e) { mediator.applicaFiltriOrdinamento(); }
+        };
+        filtroGenere.getDocument().addDocumentListener(docListener);
+        filtroValMin.getDocument().addDocumentListener(docListener);
+        filtroValMax.getDocument().addDocumentListener(docListener);
+        filtroStato.addActionListener(e -> mediator.applicaFiltriOrdinamento());
 
         Libreria.getInstance().registraObserver(this);
         mediator.aggiornaVista();

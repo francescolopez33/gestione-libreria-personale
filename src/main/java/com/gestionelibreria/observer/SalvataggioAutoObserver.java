@@ -1,6 +1,6 @@
 package com.gestionelibreria.observer;
 
-import com.gestionelibreria.libreria.Libreria;
+
 import com.gestionelibreria.model.Libro;
 import com.gestionelibreria.persistenza.FileLibreriaRepository;
 
@@ -14,7 +14,6 @@ public class SalvataggioAutoObserver implements Observer {
         //quando la librera cambia, salviamo i libri
         FileLibreriaRepository.getInstance().salva(libri);
         System.out.println("Salvataggio automatico completato.");
-
     }//update
 
 

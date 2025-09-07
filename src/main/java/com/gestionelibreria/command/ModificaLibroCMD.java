@@ -36,12 +36,6 @@ public class ModificaLibroCMD implements Comando{
     }//annulla
 
 
-    public Libro getLibroNuovo() {
-        return libroNuovo;
-    }//getNuovo
 
-    public Libro getLibroVecchio() {
-        return libroVecchio;
-    }//getVecchio
 
 }//ModificaLibroCMD

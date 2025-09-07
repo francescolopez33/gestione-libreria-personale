@@ -45,11 +45,11 @@ class LibreriaTest {
         Libro libroDuplicato = new Libro.Builder()
                 .titolo("Altro Titolo")
                 .autore("Altro Autore")
-                .isbn("123") // stesso ISBN
+                .isbn("123")
                 .build();
 
-        assertThrows(IllegalArgumentException.class, () -> libreria.aggiungiLibro(libroDuplicato));
 
+        assertThrows(IllegalArgumentException.class, () -> libreria.aggiungiLibro(libroDuplicato));
 
         assertEquals(1, libreria.getLibri().size());
     }//testAggiungiDuplicato

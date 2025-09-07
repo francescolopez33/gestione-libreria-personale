@@ -61,7 +61,7 @@ public class Libro {
         private String isbn;
         private String genere;
         private int valutazione = 0; // default: 0 = non valutato
-        private StatoLettura statoLettura = StatoLettura.DA_LEGGERE; // default
+        private StatoLettura statoLettura = StatoLettura.DA_LEGGERE; //default
 
         public Builder titolo(String titolo) {
             this.titolo = titolo;

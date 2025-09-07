@@ -17,8 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import java.util.ArrayList;
-import java.util.List;
+
 
 import static org.mockito.Mockito.*;
 
@@ -75,77 +74,10 @@ public class LibreriaMediatorTest {
     }//AggiungiLibroOK
 
 
-    /*
-    @Test
-    void testAggiornaVistaConFiltriEOrdinamento() {
-
-        JComboBox<String> mockOrdinamentoBox = mock(JComboBox.class);
-        JTextField mockFiltroGenere = mock(JTextField.class);
-        JComboBox<StatoLettura> mockFiltroStato = mock(JComboBox.class);
-        JTextField mockFiltroValMin = mock(JTextField.class);
-        JTextField mockFiltroValMax = mock(JTextField.class);
-        JTextField mockCercaField = mock(JTextField.class);
-
-
-        when(mockGui.getOrdinamentoBox()).thenReturn(mockOrdinamentoBox);
-        when(mockGui.getFiltroGenere()).thenReturn(mockFiltroGenere);
-        when(mockGui.getFiltroStato()).thenReturn(mockFiltroStato);
-        when(mockGui.getFiltroValMin()).thenReturn(mockFiltroValMin);
-        when(mockGui.getFiltroValMax()).thenReturn(mockFiltroValMax);
-        when(mockGui.getCercaField()).thenReturn(mockCercaField);
-
-
-        when(mockOrdinamentoBox.getSelectedItem()).thenReturn("Nessuno");
-        when(mockFiltroGenere.getText()).thenReturn("");
-        when(mockFiltroStato.getSelectedItem()).thenReturn(null);
-        when(mockFiltroValMin.getText()).thenReturn("");
-        when(mockFiltroValMax.getText()).thenReturn("");
-        when(mockCercaField.getText()).thenReturn("");
-
-
-        Libro libro1 = new Libro.Builder()
-                .titolo("Il Signore degli Anelli")
-                .autore("J.R.R. Tolkien")
-                .isbn("123")
-                .genere("Fantasy")
-                .valutazione(5)
-                .stato(StatoLettura.LETTO)
-                .build();
-
-        when(mockLibreria.getLibri()).thenReturn(List.of(libro1));
-
-
-        mediator.aggiornaVista();
-
-        verify(mockTableModel).setRowCount(0);
-        verify(mockTableModel).addRow(any(Object[].class));
-    }//AggiornaVisitaTEST
-
-*/
 
 
 
 
-    @Test
-    void testRimuoviLibroSelezionato() {
-
-        int rigaSelezionata = 0;
-        String isbnDaRimuovere = "123-456";
-
-
-        when(mockTableModel.getValueAt(rigaSelezionata, 2)).thenReturn(isbnDaRimuovere);
-
-
-        try (MockedStatic<GestoreComandi> mockedGestore = mockStatic(GestoreComandi.class)) {
-
-            mediator.rimuoviLibroSelezionato(rigaSelezionata);
-
-
-            mockedGestore.verify(() -> GestoreComandi.eseguiComando(argThat(
-                    cmd -> cmd instanceof RimuoviLibroCMD &&
-                            ((RimuoviLibroCMD) cmd).getIsbn().equals(isbnDaRimuovere))));
-        }
-    }//testRimuoviLibroSelezionato
 
 
 

@@ -56,8 +56,8 @@ public class SalvataggioAutoObserverTest {
         Libro libro2 = new Libro.Builder().titolo("Due").autore("B").isbn("111").build(); // stesso ISBN
 
         libreria.aggiungiLibro(libro1);
-        file.delete(); // reset dopo primo salvataggio
-        libreria.aggiungiLibro(libro2); // dovrebbe fallire
+        file.delete(); //reset dopo primo salvataggio
+        libreria.aggiungiLibro(libro2);
 
         assertFalse(file.exists(), "Se l'aggiunta fallisce, il file non deve essere modificato");
     }//NosalvataggioDopoFallimento

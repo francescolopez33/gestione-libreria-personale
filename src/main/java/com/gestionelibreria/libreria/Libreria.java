@@ -42,9 +42,7 @@ public class Libreria {
             }
         }
         libri.add(libro);
-
-            notifyObservers();
-
+        notifyObservers();
     }//aggiungiLibro
 
 
@@ -91,15 +89,11 @@ public class Libreria {
     }//rimuoviObserver
 
     private void notifyObservers() {
+        List<Libro> copiaLibri = new ArrayList<>(libri);
         for (Observer o : observers) {
-            o.update(Collections.unmodifiableList(libri));
+            o.update(copiaLibri);
         }
     }//notificaObserver
-
-
-    public List<Libro> getLibriOrdinati(OrdinamentoStrategy strategy) {
-        return strategy.ordina(new ArrayList<>(libri));
-    }//getLibriOrdinati
 
 
     public void setLibri(List<Libro> nuovaListaDiLibri) {
